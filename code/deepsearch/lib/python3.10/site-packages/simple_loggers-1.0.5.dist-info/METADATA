@@ -1,0 +1,55 @@
+Metadata-Version: 2.1
+Name: simple-loggers
+Version: 1.0.5
+Summary: A Simple Logger Package
+Home-page: https://github.com/suqingdong/simple-loggers
+Author: suqingdong
+Author-email: 1078595229@qq.com
+License: BSD License
+Project-URL: Tracker, https://github.com/suqingdong/simple-loggers/issues
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Software Development :: Libraries
+Description-Content-Type: text/markdown
+Requires-Dist: colorama
+Requires-Dist: coloredlogs
+
+# A Simple Logger Package
+
+## Installation
+```bash
+pip install simple-loggers
+```
+
+## Usage
+```python
+
+from simple_loggers import SimpleLogger
+
+logger = SimpleLogger(colored=True)
+logger.debug('debug message')
+logger.info('info message')
+logger.warning('warn message')
+logger.error('error message')
+
+logger2 = SimpleLogger(name='TEST2', colored=False, logfile='out.log')
+logger2.debug('debug message')
+logger2.info('info message')
+logger2.warning('warn message')
+logger2.error('error message')
+
+logger3 = SimpleLogger(name='TEST3', level='info', fmt='%(asctime)s %(levelname)s: %(message)s')
+logger3.debug('debug message')
+logger3.info('info message')
+logger3.warning('warn message')
+logger3.error('error message')
+```
+

@@ -1,6 +1,6 @@
 from openai import OpenAI
 import openai
-from scrapearxiv import scrape_arxiv
+#from scrapearxiv import scrape_arxiv
 import pandas as pd
 import requests
 import time

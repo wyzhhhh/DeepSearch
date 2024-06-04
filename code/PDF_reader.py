@@ -237,7 +237,7 @@ def extract_pdf_url(pmid):
 def process_pdf(pdf_url, prompts_type, proxy):
     parts = pdf_url.split('/')
     pmc_id = parts[5]
-    pdf_save_path = f"/mnt/mydisk/wangyz/Research_agent/top_document/{pmc_id}.pdf"
+    pdf_save_path = f"/home/user/Deepsearch/top_papers/{pmc_id}.pdf"
     download_pdf(pdf_url, pdf_save_path)  # 下载pdf文件
 
     pdf_summaries = {'Introduction': '', 'Literature': '', 'Discussion': ''}

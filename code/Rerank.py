@@ -54,7 +54,7 @@ def impact_factor(journal_id):
 def Jina_rerank(df,query,top_n,jina_api_key):
 
     #start_time = time.time()
-    #csv_file_path = '/mnt/mydisk/wangyz/Research_agent/csv_download/merged_citations.csv'
+    #csv_file_path = '/home/user/Deepsearch/score_file/merged_citations.csv'
     #df = pd.read_csv(file_path)
     if 'Abstract' in df.columns:
         documents = []

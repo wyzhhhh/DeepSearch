@@ -1,0 +1,4 @@
+[console_scripts]
+IF = impact_factor.bin.cli:main
+impact_factor = impact_factor.bin.cli:main
+

@@ -17,7 +17,7 @@ import re
 from langchain.document_transformers import EmbeddingsRedundantFilter
 
 
-pdf_file_name = f"/mnt/mydisk/wangyz/Research_agent/pdf_download/{uuid.uuid4()}.pdf"
+pdf_file_name = f"/home/user/Deepsearch/output_pdf/{uuid.uuid4()}.pdf"
 client = OpenAI(
     base_url="https://kapkey.chatgptapi.org.cn/v1",
     api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
@@ -63,8 +63,8 @@ if st.button('Get Started'):
         st.info('🕗Starting the scraping process...')
         start_page = 1
         end_page = 5
-        ori_file_path = "/mnt/mydisk/wangyz/Research_agent/csv_download/abstract_ori_result.csv"
-        pubmed_file_path = "/mnt/mydisk/wangyz/Research_agent/csv_download/pubmed_ori_result.csv"
+        ori_file_path = "/home/user/Deepsearch/score_file/abstract_ori_result.csv"
+        pubmed_file_path = "/home/user/Deepsearch/score_file/pubmed_ori_result.csv"
         # 创建并行任务
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             future_abstract = executor.submit(scrape_format_abstract, start_page, end_page, abstract_url, ori_file_path)
@@ -111,7 +111,7 @@ if st.button('Get Started'):
         if impact_factor_results:
                 merged_df['impact_factor'] = merged_df['Journal_id'].map(impact_factor_results)
 
-        merged_file_path = "/mnt/mydisk/wangyz/Research_agent/csv_download/merged_afterfusion.csv"
+        merged_file_path = "/home/user/Deepsearch/score_file/merged_afterfusion.csv"
         merged_df.to_csv(merged_file_path, index=False)
         st.success('✅Scraping process completed successfully.')
 
@@ -122,7 +122,7 @@ if st.button('Get Started'):
         top_docs_df = pd.read_csv(merged_file_path,encoding='ISO-8859-1')
         
         # 根据被引数量进行排名
-        #rerank_path = "/mnt/mydisk/wangyz/Research_agent/csv_download/rerank_jina.csv"
+        #rerank_path = "/home/user/Deepsearch/score_file/rerank_jina.csv"
         afterrerank_df = Jina_rerank(top_docs_df,question,300,jina_api_key)
         #afterrerank_df = local_rerank(top_docs_df,question,300)
         afternorma_df = Normalization(afterrerank_df,type = "Cited Number")#将被引数量正则化
@@ -172,13 +172,13 @@ if st.button('Get Started'):
             print("No row found with non-empty PMID, PMCID, and DOI.")
 
 
-        rerank_path = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_rerank_jina.csv"
+        rerank_path = f"/home/user/Deepsearch/score_file/{max_pmid}_rerank_jina.csv"
         afternorma_df.to_csv(rerank_path, index=False)
 
         max_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{max_pmcid}/pdf/" # 核心论文的pdf链接
         # 设置核心论文的references及citations的保存路径
-        references_filename =f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmcid}_references.csv"
-        citations_filename = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmcid}_citations.csv"
+        references_filename =f"/home/user/Deepsearch/score_file/{max_pmcid}_references.csv"
+        citations_filename = f"/home/user/Deepsearch/score_file/{max_pmcid}_citations.csv"
         print("被引量最多的文章pmcid:", max_pmcid)
         print("被引量最多的文章pmid:", max_pmid)
         print("被引量最多的文章doi:", max_doi)
@@ -204,7 +204,7 @@ if st.button('Get Started'):
         first_page_url = f"https://pubmed.ncbi.nlm.nih.gov/?size=200&linkname=pubmed_pubmed_citedin&from_uid={max_pmid}"
         total_pages = get_total_pages(first_page_url)
         base_url="https://pubmed.ncbi.nlm.nih.gov/"
-        citedby_path = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_citedby.csv"
+        citedby_path = f"/home/user/Deepsearch/score_file/{max_pmid}_citedby.csv"
         with open(citedby_path, 'w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(["PMID", "Title", "DOI", "Abstract", "PMCID", "Journal_title","Journal_id"])
@@ -225,7 +225,7 @@ if st.button('Get Started'):
 
 
         block4_start_time = time.time()
-        similarity_output_path = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmcid}_similarity_output.csv"
+        similarity_output_path = f"/home/user/Deepsearch/score_file/{max_pmcid}_similarity_output.csv"
         # 通过IP池得到多个ip
         proxies = []
         max_workers = 20 
@@ -276,7 +276,7 @@ if st.button('Get Started'):
             }
             kept_df.rename(columns=rename_dict, inplace=True)
             kept_df.replace({np.nan: None}, inplace=True)
-            kept_df.to_csv('/mnt/mydisk/wangyz/Research_agent/csv_download/merged_citations.csv', index=False, na_rep='')
+            kept_df.to_csv('/home/user/Deepsearch/score_file/merged_citations.csv', index=False, na_rep='')
             rerank_citation_df = Jina_rerank(kept_df,question,200,jina_api_key) #将合并后的citation进行rerank，计算relevance
 
                 
@@ -405,7 +405,7 @@ if st.button('Get Started'):
         for i,pdf_url in enumerate(pdf_urls):
             parts = pdf_url.split('/')
             pmc_id = parts[5]
-            pdf_save_path = f"/mnt/mydisk/wangyz/Research_agent/top_document/{pmc_id}.pdf"
+            pdf_save_path = f"/home/user/Deepsearch/top_papers/{pmc_id}.pdf"
             download_pdf(pdf_url, pdf_save_path)  # 下载pdf文件
             overall_progress = (i + 1) / total_pdfs
             progress_bar_pdf.progress(overall_progress)  # 更新进度条

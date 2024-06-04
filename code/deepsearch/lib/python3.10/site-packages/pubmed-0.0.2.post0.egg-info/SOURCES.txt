@@ -1,0 +1,12 @@
+setup.cfg
+setup.py
+pubmed/__init__.py
+pubmed/literature.py
+pubmed/pubmedcsv.py
+pubmed.egg-info/PKG-INFO
+pubmed.egg-info/SOURCES.txt
+pubmed.egg-info/dependency_links.txt
+pubmed.egg-info/entry_points.txt
+pubmed.egg-info/requires.txt
+pubmed.egg-info/top_level.txt
+pubmed.egg-info/zip-safe

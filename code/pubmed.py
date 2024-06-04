@@ -1,6 +1,5 @@
 from openai import OpenAI
 import openai
-from scrapearxiv import scrape_arxiv
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
