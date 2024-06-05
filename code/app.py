@@ -15,7 +15,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 from langchain.document_transformers import EmbeddingsRedundantFilter
-
+from RSR_score import *
 
 pdf_file_name = f"/mnt/mydisk/wangyz/Research_agent/pdf_download/{uuid.uuid4()}.pdf"
 client = OpenAI(
@@ -141,6 +141,20 @@ if st.button('Get Started'):
                             afternorma_df['relevance_score'] * weight_relevance +
                             afternorma_df['impact_Normalized'] * weight_impact)/ (weight_percentile + weight_relevance + weight_impact)
         #afternorma_df.to_csv(rerank_path, index=False)
+
+
+        #RSR方法计算分数
+        selected_data = afternorma_df[['Cited Number', 'relevance_score', 'impact_factor']]
+        core_rsr_path = f'/mnt/mydisk/wangyz/Research_agent/RSR_core/{uuid.uuid4()}_core_rsr'
+        RSR_result, distribution = rsrAnalysis(selected_data, file_name=core_rsr_path)
+        print("The list of core papers are saved in ",core_rsr_path)
+        RSR_result = RSR_result.sort_index()
+        RSR_result = RSR_result.reindex(afternorma_df.index)
+        afternorma_df['RSR'] = RSR_result['RSR']
+        afternorma_df['Probit'] = RSR_result['Probit']
+        
+        
+
         block2_end_time = time.time()
         
 
@@ -154,7 +168,7 @@ if st.button('Get Started'):
 
 
         #寻找最终分数最高的那一篇文章作为core paper
-        sorted_df = afternorma_df.sort_values(by='final_score', ascending=False).reset_index()
+        sorted_df = afternorma_df.sort_values(by='RSR', ascending=False).reset_index()
         # 循环直到找到PMID, PMCID, DOI都不为空的行
 
         found = False
@@ -172,7 +186,7 @@ if st.button('Get Started'):
             print("No row found with non-empty PMID, PMCID, and DOI.")
 
 
-        rerank_path = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_rerank_jina.csv"
+        rerank_path = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_core_rerank_jina.csv"
         afternorma_df.to_csv(rerank_path, index=False)
 
         max_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{max_pmcid}/pdf/" # 核心论文的pdf链接
@@ -334,6 +348,22 @@ if st.button('Get Started'):
             if impact_factor_results:
                 rerank_citation_df['impact_factor'] = rerank_citation_df['Journal_id'].map(impact_factor_results)
 
+
+
+
+            
+            #RSR方法计算分数
+            selected_data = rerank_citation_df[['Cited Number', 'relevance_score', 'impact_factor','similarity']]
+            RSR_result, distribution = rsrAnalysis(selected_data, file_name=f'/mnt/mydisk/wangyz/Research_agent/RSR_core/{max_pmid}_rsr')
+            RSR_result = RSR_result.sort_index()
+            RSR_result = RSR_result.reindex(rerank_citation_df.index)
+            rerank_citation_df['RSR'] = RSR_result['RSR']
+            rerank_citation_df['Probit'] = RSR_result['Probit']
+            rerank_citation_df.to_csv(f'/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_updated_data.csv', index=False)
+            
+
+
+
             #挑选出最相关且重要的几篇文章
             similarity_df = Normalization(rerank_citation_df,type="Cited Number")
             similarity_df = Normalization(similarity_df,type="impact_factor")
@@ -380,6 +410,17 @@ if st.button('Get Started'):
                 rerank_citation_df['impact_factor'] = rerank_citation_df['Journal_id'].map(impact_factor_results)
 
 
+            
+            #RSR计算分数
+            selected_data = rerank_citation_df[['relevance_score', 'impact_factor']]
+            RSR_result, RSR_distribution = rsrAnalysis(selected_data, file_name=f'/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_rsr')
+            RSR_result = RSR_result.sort_index()
+            RSR_result = RSR_result.reindex(rerank_citation_df.index)
+            rerank_citation_df['RSR'] = RSR_result['RSR']
+            rerank_citation_df['Probit'] = RSR_result['Probit']
+            rerank_citation_df.to_csv(f'/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_updated_data.csv', index=False)
+            
+
 
             similarity_df = Normalization(rerank_citation_df,type="impact_factor")
             final_score = (
@@ -391,6 +432,7 @@ if st.button('Get Started'):
 
         # 将计算结果作为一个新列添加到 DataFrame 中
         rerank_citation_df['final_score'] = final_score
+        rerank_citation_df['RSR'] = RSR_result['RSR']
         rerank_citation_df.to_csv(similarity_output_path,index=False)
         # 根据相似度确定最终的pdf链接
         pdf_urls, abstract_list, title_list,relatedpapers = extract_pdf_similarity(similarity_output_path,type="pubmed",top_n=4)
