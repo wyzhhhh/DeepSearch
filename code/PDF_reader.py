@@ -106,7 +106,7 @@ def get_summarize(url, prompt_type, proxy,filepath=None):
 
 def extract_more(csv_path, top_n):
     data = pd.read_csv(csv_path, encoding='ISO-8859-1')
-    top_data = data.sort_values(by='final_score', ascending=False)
+    top_data = data.sort_values(by='Probit', ascending=False)
 
     DOIs = top_data['DOI'].head(top_n).tolist()
     abstracts = top_data['Abstract'].head(top_n).tolist()
