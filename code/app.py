@@ -168,7 +168,7 @@ if st.button('Get Started'):
 
 
         #寻找最终分数最高的那一篇文章作为core paper
-        sorted_df = afternorma_df.sort_values(by='RSR', ascending=False).reset_index()
+        sorted_df = afternorma_df.sort_values(by='Probit', ascending=False).reset_index()
         # 循环直到找到PMID, PMCID, DOI都不为空的行
 
         found = False
