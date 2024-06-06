@@ -19,12 +19,20 @@ from langchain_community.embeddings import JinaEmbeddings
 from summarize import *
 from bs4 import BeautifulSoup
 from langchain_voyageai import VoyageAIEmbeddings
-os.environ["OPENAI_API_KEY"] = 'sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d'
-openai.api_key = os.getenv('OPENAI_API_KEY')
+
 os.environ["VOYAGE_API_KEY"] = "pa-5C2ZvLnYfOYMIxzA8JD4k5jNn8gIIQIUxCOs5PpPJaE"
 voyage_api_key = os.getenv('VOYAGE_API_KEY')
 
-os.environ["OPENAI_API_BASE"] = 'https://api.chatgptid.net/v1'
+#os.environ["OPENAI_API_KEY"] = 'sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d'
+#os.environ["OPENAI_API_BASE"] = 'https://api.chatgptid.net/v1'
+
+#os.environ["OPENAI_API_BASE"] = 'https://api.xiaoai.plus/v1'
+#os.environ["OPENAI_API_KEY"] = 'sk-hz4C02ZEZUjbkk0aE92028468246454793Bc6649F0Bb1b9e'
+
+os.environ["OPENAI_API_BASE"] = "https://api.closeai-proxy.xyz/v1"
+os.environ["OPENAI_API_KEY"] = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
 from pubmed import *
@@ -42,8 +50,14 @@ from openai import OpenAI
 
 
 client = OpenAI(
-    base_url="https://kapkey.chatgptapi.org.cn/v1",
-    api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+    #base_url="https://kapkey.chatgptapi.org.cn/v1",
+    #api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+    
+    base_url = "https://api.xiaoai.plus/v1",
+    api_key = "sk-hz4C02ZEZUjbkk0aE92028468246454793Bc6649F0Bb1b9e"
+
+    #base_url = "https://api.closeai-proxy.xyz/v1",
+    #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
 )
 
 def download_pdf(url, save_path):
@@ -105,6 +119,8 @@ def get_summarize(url, prompt_type, proxy,filepath=None):
 
 
 def extract_more(csv_path, top_n):
+
+
     data = pd.read_csv(csv_path, encoding='ISO-8859-1')
     top_data = data.sort_values(by='Probit', ascending=False)
 
@@ -113,13 +129,41 @@ def extract_more(csv_path, top_n):
     titles = top_data['Title'].head(top_n).tolist()
     impact_factors = top_data['impact_factor'].head(top_n).tolist()
     
-    DOIs = [doi.replace("\n", " ") for doi in DOIs]
-    abstracts = [abstract.replace("\n", " ") for abstract in abstracts]
-    titles = [title.replace("\n", " ") for title in titles]
-    impact_factors = [str(impact_factor).replace("\n", " ") for impact_factor in impact_factors]
-   
 
-    return DOIs, abstracts, titles, impact_factors
+    # 清洗DOIs列表
+    cleaned_DOIs = []
+    for doi in DOIs:
+        if isinstance(doi, str) and doi:  # 如果DOI不为空（非None且非空字符串）
+            cleaned_DOIs.append(doi.replace("\n", " "))
+        else:
+            cleaned_DOIs.append("")
+
+    # 清洗abstracts列表
+    cleaned_abstracts = []
+    for abstract in abstracts:
+        if isinstance(abstract, str) and abstract:
+            cleaned_abstracts.append(abstract.replace("\n", " "))
+        else:
+            cleaned_abstracts.append("")
+
+    # 清洗titles列表
+    cleaned_titles = []
+    for title in titles:
+        if isinstance(title, str) and title:  # 如果标题不为空
+            cleaned_titles.append(title.replace("\n", " "))
+        else:
+            cleaned_titles.append("")
+
+    # 清洗impact_factors列表
+    cleaned_impact_factors = []
+    for impact_factor in impact_factors:
+        if impact_factor:  # 如果影响因子不为空
+            cleaned_impact_factors.append(str(impact_factor).replace("\n", " "))
+        else:
+            cleaned_impact_factors.append("")
+
+   
+    return cleaned_DOIs, cleaned_abstracts, cleaned_titles, cleaned_impact_factors
 
 
 def extract_pdf_similarity(csv_path, type,top_n):
@@ -410,12 +454,18 @@ def load_recommender(path, recommender, start_page=1):
 def generate_text(system_content, prompt):
 
     client = OpenAI(
-    base_url="https://kapkey.chatgptapi.org.cn/v1",
-    api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+        #base_url="https://kapkey.chatgptapi.org.cn/v1",
+        #api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+        
+        base_url = "https://api.xiaoai.plus/v1",
+        api_key = "sk-hz4C02ZEZUjbkk0aE92028468246454793Bc6649F0Bb1b9e"
+
+        #base_url = "https://api.closeai-proxy.xyz/v1",
+        #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
     )
 
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "assistant", "content": "Here is some initial assistant message."},
@@ -503,7 +553,7 @@ def process_document(url, prompts,recommender):
     load_recommender(url,recommender)  
     results = {}
     for section, prompt in prompts.items():
-        results[section] = generate_answer(recommender,section, prompt, model="gpt-3.5-turbo")
+        results[section] = generate_answer(recommender,section, prompt, model="gpt-4o")
     return results
 
 """
@@ -551,3 +601,5 @@ for i, ctx in enumerate(combined_text):
     print(f"The DISCUSSION section of {ctx['url']} is below:\n {ctx['Discussion']} ") 
     print(f"The LITERATURE section of {ctx['url']} is below:\n {ctx['Literature']} ") 
 """
+
+DOIs, abstracts, titles, IFs = extract_more("/mnt/mydisk/wangyz/Research_agent/csv_download/PMC8497485_similarity_output.csv",top_n=10)

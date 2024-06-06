@@ -10,8 +10,15 @@ import uuid
 from save_pdf import *
 
 client = OpenAI(
-    base_url="https://kapkey.chatgptapi.org.cn/v1",
-    api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+    #base_url="https://kapkey.chatgptapi.org.cn/v1",
+    #api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+
+
+    base_url = "https://api.xiaoai.plus/v1",
+    api_key = "sk-hz4C02ZEZUjbkk0aE92028468246454793Bc6649F0Bb1b9e"
+
+    #base_url = "https://api.closeai-proxy.xyz/v1",
+    #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
 )
 
 os.environ["VOYAGE_API_KEY"] = "pa-5C2ZvLnYfOYMIxzA8JD4k5jNn8gIIQIUxCOs5PpPJaE"
@@ -255,7 +262,7 @@ def generate_report(context,question,prompt_type,paper,relatedPaper,researchProb
     print(f"-----------------------------{prompt_type}------------------------------")
     print(prompt)
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[{"role": "system", "content": system_content},
                   {"role": "user", "content": prompt}],
         temperature=0,

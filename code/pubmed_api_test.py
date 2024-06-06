@@ -180,50 +180,38 @@ print("花时：",end_time-start_time)# 9.02
 
 
 """
-from PDF_reader import *
 import concurrent.futures
+from PDF_reader import *
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+question = "Can you describe the cellular hierarchy in melanoma and its role in decoupling tumor growth from metastatic potential?"
 
-question = "Advancements and Challenges in Next-Generation Sequencing (NGS) Technologies for Genomic Analysis"
-
-
-# PDF documents to process
-pdf_urls = ["/mnt/mydisk/wangyz/Research_agent/top_document/PMC6174532.pdf", "/mnt/mydisk/wangyz/Research_agent/top_document/PMC6380351.pdf"]
 introduction = f"Question:{question}" \
                 "Based on the content of the above research questions,  please introduce the background information and significance of the research on this topic, as well as the necessity and importance of this research topic, and the potential impact of this research topic."
-
 literature = f"Question:{question}" \
                 "Based on the content of the above research questions,  please introduce what experiments this article has set up around this topic, what the experimental process is, what the experimental results are, what methods are used to verify this topic, and why this method is proposed."
-
 discussion = f"Question:{question}" \
                 "Based on the content of the above research questions,  Please explain the findings of the research topic, the significance of the results, and compare and contrast the research results with the results of other studies in related fields; Based on the findings and limitations of the current study, propose possible directions or suggestions for future research; Provide A summary of the entire study, emphasizing its contribution to the academic or practical field"
-
-
 prompts = {
     "Introduction": introduction,
     "Literature": literature,
     "Discussion": discussion,
 }
-# Dictionary to store results
-contents = []
+pdfs = ['/mnt/mydisk/wangyz/Research_agent/top_document/PMC6771388.pdf','/mnt/mydisk/wangyz/Research_agent/top_document/PMC7185899.pdf','/mnt/mydisk/wangyz/Research_agent/top_document/PMC7214418.pdf','/mnt/mydisk/wangyz/Research_agent/top_document/PMC8927161.pdf','/mnt/mydisk/wangyz/Research_agent/top_document/PMC5953834.pdf']
+combined_text = []
 recommender = SemanticSearch()
-
-# Use ThreadPoolExecutor to handle tasks in parallel
-with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-    # Map each URL to the process_document function
-    future_to_url = {executor.submit(process_document, url, prompts,recommender): url for url in pdf_urls}
+with concurrent.futures.ThreadPoolExecutor(max_workers=len(pdfs)-1) as executor:
+    future_to_url = {executor.submit(process_document, url, prompts,recommender): url for url in pdfs}
+    total_pdfs = len(future_to_url)
+    completed = 0
     for future in concurrent.futures.as_completed(future_to_url):
         url = future_to_url[future]
         try:
             result = future.result()
-            contents.append(result)
+            combined_text.append(result)
         except Exception as exc:
             print(f"{url} generated an exception: {exc}")
-for i in range(len(contents)):
-    contents[i]['url'] = pdf_urls[i]
+        completed += 1
 
 
-
-for i, ctx in enumerate(contents):
-    print(f"The INTRODUCTION section of {ctx['url']} is: {ctx['Introduction']} ") 
-    print(f"The DISCUSSION section of {ctx['url']} is: {ctx['Discussion']} ")
-    print(f"The LITERATURE section of {ctx['url']} is: {ctx['Literature']} ")
+print(combined_text)

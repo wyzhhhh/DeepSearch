@@ -19,8 +19,15 @@ from RSR_score import *
 
 pdf_file_name = f"/mnt/mydisk/wangyz/Research_agent/pdf_download/{uuid.uuid4()}.pdf"
 client = OpenAI(
-    base_url="https://kapkey.chatgptapi.org.cn/v1",
-    api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+    #base_url="https://kapkey.chatgptapi.org.cn/v1",
+    #api_key="sk-46sQ2NQu5oOtoNc8416dB643BdA84151A204F44b3313Dd8d"
+
+
+    base_url = "https://api.xiaoai.plus/v1",
+    api_key = "sk-hz4C02ZEZUjbkk0aE92028468246454793Bc6649F0Bb1b9e"
+
+    #base_url = "https://api.closeai-proxy.xyz/v1",
+    #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
 )
 
 #ip_api_url = "http://zhuoyuekeji.zhuoyuejituan.com:66/SML.aspx?action=GetIP&OrderNumber=04573ee80371d959df012c504261d2d9&Split=&Address=&isp=&poolnumber=0&qty=1"
@@ -494,7 +501,7 @@ if st.button('Get Started'):
                     combined_text.append(result)
                 except Exception as exc:
                     print(f"{url} generated an exception: {exc}")
-                    st.error(f"{url} generated an exception: {exc}")
+                    #st.error(f"{url} generated an exception: {exc}")
                 completed += 1
                 progress_bar_retrie.progress(completed / total_pdfs)
 
