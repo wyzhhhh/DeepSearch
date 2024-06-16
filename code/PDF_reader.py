@@ -58,6 +58,7 @@ client = OpenAI(
 
     #base_url = "https://api.closeai-proxy.xyz/v1",
     #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
+
 )
 
 def download_pdf(url, save_path):
@@ -462,6 +463,8 @@ def generate_text(system_content, prompt):
 
         #base_url = "https://api.closeai-proxy.xyz/v1",
         #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
+
+        
     )
 
     completion = client.chat.completions.create(
@@ -602,4 +605,3 @@ for i, ctx in enumerate(combined_text):
     print(f"The LITERATURE section of {ctx['url']} is below:\n {ctx['Literature']} ") 
 """
 
-DOIs, abstracts, titles, IFs = extract_more("/mnt/mydisk/wangyz/Research_agent/csv_download/PMC8497485_similarity_output.csv",top_n=10)

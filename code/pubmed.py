@@ -17,6 +17,7 @@ client = OpenAI(
 
     #base_url = "https://api.closeai-proxy.xyz/v1",
     #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
+
 )
 
 def create_pubmed_nested_query(keywords):
@@ -81,6 +82,9 @@ def parse_xml_for_id(xml_data,output_type):
     if record is not None and 'pmid' in record.attrib and output_type == "pmid":
         pmid=record.attrib['pmid']
         return pmid
+    if record is not None and 'pmid' in record.attrib and output_type == "doi":
+        doi=record.attrib['doi']
+        return doi
     else:
         return
 
@@ -112,7 +116,7 @@ def get_id_from_doi(doi,output_type):
         #print(f"Failed to retrieve data: Status code {response.status_code}")
         return None
 
-def get_pmcid_from_pmid(pmid):
+def get_pmcid_from_pmid(pmid,type=None):
     # 构建查询URL
     url = "https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/"
     params = {
@@ -122,11 +126,15 @@ def get_pmcid_from_pmid(pmid):
 
     # 发送GET请求
     response = requests.get(url, params=params)
-
+    
     # 检查响应状态码
     if response.status_code == 200:
         if response.text:
+            print(response.text)
             pmcid = parse_xml_for_id(response.text,output_type="pmcid")
+            doi = parse_xml_for_id(response.text,output_type="doi")
+            if type == "doi":
+                return doi
             return pmcid
         else:
             #print("No data to parse.")
@@ -134,6 +142,5 @@ def get_pmcid_from_pmid(pmid):
     else:
         #print(f"Failed to retrieve data: Status code {response.status_code}")
         return None
-
 
 

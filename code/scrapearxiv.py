@@ -113,6 +113,7 @@ def get_total_pages(url):
         total_pages = int(total_pages_label.text.split()[-1])
         print(f"Total pages: {total_pages}")
     else:
+        total_pages = 1
         print("Total pages label not found.")
     return total_pages
 
@@ -219,7 +220,6 @@ def scrape_format_pubmed(start_page, end_page, base_url, file_path, pmID=None):
             try:
                 future.result()  # 调用这个方法会阻塞直到爬取任务完成
                 count += 1
-                progress_bar.progress(count / total_pages)  # 更新进度条
             except Exception as exc:
                 print(f'Page {page} generated an exception: {exc}')
 

@@ -28,6 +28,7 @@ client = OpenAI(
 
     #base_url = "https://api.closeai-proxy.xyz/v1",
     #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
+
 )
 
 #ip_api_url = "http://zhuoyuekeji.zhuoyuejituan.com:66/SML.aspx?action=GetIP&OrderNumber=04573ee80371d959df012c504261d2d9&Split=&Address=&isp=&poolnumber=0&qty=1"
@@ -36,9 +37,14 @@ initial_jina_api_key = "jina_a6f1d31fb5b34b3fa5ddfeff38105879lhkP5FSfnhZBJRNp0qF
 voyage_api_key = "pa-5C2ZvLnYfOYMIxzA8JD4k5jNn8gIIQIUxCOs5PpPJaE"
 
 
+
+
 # 设置页面标题
 st.title('Research Agent')
 question = st.text_input("Please enter your question:")
+core_pmid = st.text_input("Please enter your core paper PMID(like 30833271):")
+core_pmcid = st.text_input("Please enter your core paper PMCID(like PMC6571041):")
+
 #OPENAI_KEY = st.text_input("Please enter your openai key:")
 jina_api_key = st.text_input("Please enter your jina reranker key:", value=initial_jina_api_key)
 if st.button('Get Started'):
@@ -168,29 +174,32 @@ if st.button('Get Started'):
 
 
 
+        #确定核心论文，用户自己输入核心论文or排序得到
+        if core_pmcid and core_pmid:
+            max_pmcid = core_pmcid
+            max_pmid = core_pmid
+            max_doi = get_pmcid_from_pmid(max_pmid, type="doi")
 
 
+        else:
 
+            #寻找最终分数最高的那一篇文章作为core paper
+            sorted_df = afternorma_df.sort_values(by='Probit', ascending=False).reset_index()
+            # 循环直到找到PMID, PMCID, DOI都不为空的行
 
+            found = False
+            for index, row in sorted_df.iterrows():
+                # 确保所有列均非空
+                if pd.notna(row['PMID']) and pd.notna(row['PMCID']) and pd.notna(row['DOI']):
+                    max_pmcid = row['PMCID']
+                    max_pmid = row['PMID']
+                    max_doi = row['DOI']
+                    max_citation_number = row['Cited Number']
+                    found = True
+                    break
 
-
-        #寻找最终分数最高的那一篇文章作为core paper
-        sorted_df = afternorma_df.sort_values(by='Probit', ascending=False).reset_index()
-        # 循环直到找到PMID, PMCID, DOI都不为空的行
-
-        found = False
-        for index, row in sorted_df.iterrows():
-            # 确保所有列均非空
-            if pd.notna(row['PMID']) and pd.notna(row['PMCID']) and pd.notna(row['DOI']):
-                max_pmcid = row['PMCID']
-                max_pmid = row['PMID']
-                max_doi = row['DOI']
-                max_citation_number = row['Cited Number']
-                found = True
-                break
-
-        if not found:
-            print("No row found with non-empty PMID, PMCID, and DOI.")
+            if not found:
+                print("No row found with non-empty PMID, PMCID, and DOI.")
 
 
         rerank_path = f"/mnt/mydisk/wangyz/Research_agent/csv_download/{max_pmid}_core_rerank_jina.csv"
@@ -203,7 +212,7 @@ if st.button('Get Started'):
         print("被引量最多的文章pmcid:", max_pmcid)
         print("被引量最多的文章pmid:", max_pmid)
         print("被引量最多的文章doi:", max_doi)
-        print("被引量为：", max_citation_number)
+        #print("被引量为：", max_citation_number)
         # 得到核心论文的相关信息
         title,abstract=extract_pdf_url(max_pmid)
         core_paper={"title":title,"abstract":abstract}
@@ -444,6 +453,15 @@ if st.button('Get Started'):
         # 根据相似度确定最终的pdf链接
         pdf_urls, abstract_list, title_list,relatedpapers = extract_pdf_similarity(similarity_output_path,type="pubmed",top_n=4)
         pdf_urls.append(max_url)
+        #用户输入的core被引文献数量太少，导致最终pdf数量不足5，通过关键词搜索到的文章来补充
+        while len(pdf_urls) < 5:
+            # 循环直到找到PMID, PMCID, DOI都不为空的行
+            for index, row in sorted_df.iterrows():
+                if pd.notna(row['PMID']) and pd.notna(row['PMCID']) and pd.notna(row['DOI']):
+                    pmcid = row['PMCID']
+                    pmcid_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmcid}/pdf/"
+                    pdf_urls.append(pmcid_url)
+                    break
         print("The last PDF URLs found:")
         print(pdf_urls)
         st.write(f"🔜The final paper urls as follows:",pdf_urls)
@@ -566,9 +584,7 @@ if st.button('Get Started'):
         
         DOIs, abstracts, titles, IFs = extract_more(similarity_output_path,top_n=10)
         more_content = ""
-        num_papers = len(DOIs)
-        if num_papers >= 10:
-            num_papers = 10
+        num_papers = min(len(DOIs), 10)
         for i in range(num_papers):
 
             more_content += (f"Paper {i+1}\n"
@@ -577,6 +593,16 @@ if st.button('Get Started'):
                             f"DOI: {DOIs[i]}\n"
                             f"The impact factor: {IFs[i]}\n\n\n\n")
         
+
+        core_DOIs, core_abstracts, core_titles, core_IFs = extract_more(rerank_path, top_n=10)
+        core_num_papers = min(len(core_DOIs), 10)
+        for i in range(core_num_papers):
+            more_content += (f"Paper {i+11}\n"
+                            f"Title: {core_titles[i]}\n\n"
+                            f"Abstract: {core_abstracts[i]}\n\n"
+                            f"DOI: {core_DOIs[i]}\n"
+                            f"The impact factor: {core_IFs[i]}\n\n\n")
+
         report_content["More related paper"] = more_content
 
 

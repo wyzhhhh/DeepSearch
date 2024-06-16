@@ -16,6 +16,8 @@ client = OpenAI(
 
     #base_url = "https://api.closeai-proxy.xyz/v1",
     #api_key = "sk-v1Y3L4qrAPFGKMIAJ4wZ5H8eJxAuH97GYnA4iFm0pwqlKaJx"
+
+
 )
 def get_subqueris(prompt):
 
